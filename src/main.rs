@@ -1,6 +1,7 @@
-#![allow(dead_code)]
+extern crate scanner;
 
-pub mod tokens;
+use scanner::lexer;
+use scanner::tokens;
 
 use std::io::Read;
 use std::fs::File;
@@ -14,16 +15,15 @@ fn read_file() -> Result<String, std::io::Error> {
     Ok(buf)
 }
 
-
-
-
-
-
-
 fn main() {
     let buf = read_file().unwrap();
+    let mut lexer = lexer::Lexer::new(&buf);
 
-    for c in buf.chars() {
-        print!("{}", c);
+    loop {
+        let token = lexer.next_token();        
+        println!("{:?}", token);
+        if token == tokens::Token::End {
+            break;
+        }
     }
 }

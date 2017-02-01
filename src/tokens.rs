@@ -2,7 +2,7 @@
 pub enum Token {
     // Types
     Num(i32),
-    Real(i32),
+    // Real(i32),
     Str(String),
     Nil,
 
@@ -11,7 +11,7 @@ pub enum Token {
 
     // Assignment
     Assignment,
-    AddAssignment,
+    PlusAssignment,
     MinusAssignment,
     MulAssignment,
     DivAssignment,
@@ -65,6 +65,9 @@ pub enum Token {
     // End of file
     End,
     Illegal,
+
+    // Used for errors
+    Error(String),
 }
 
 pub fn lookup_identity(id: &str) -> Token {
@@ -78,6 +81,11 @@ pub fn lookup_identity(id: &str) -> Token {
         "for" => Token::For,
         "break" => Token::Break,
         "return" => Token::Return,
+        "nil" => Token::Nil,
         _ => Token::Ident(id.to_owned()),
     }
+}
+
+pub fn error(msg: &str) -> Token {
+    Token::Error(String::from(msg))
 }

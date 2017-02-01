@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use tokens;
 use tokens::Token;
 
@@ -27,9 +25,9 @@ impl<'a> Lexer<'a> {
         self.input.peek()
     }
 
-    fn peek_char_eq(&mut self, other: &char) -> bool {
+    fn peek_char_eq(&mut self, other: char) -> bool {
         match self.peek_char() {
-            Some(&c) => c == *other,
+            Some(&c) => c == other,
             None => false,
         }
     }
@@ -44,6 +42,10 @@ impl<'a> Lexer<'a> {
             }
             self.read_char();
         }
+    }
+
+    fn skip(&mut self) {
+        self.read_char();
     }
 
     fn read_while<F>(&mut self, buf: &mut String, func: F)
@@ -84,14 +86,88 @@ impl<'a> Lexer<'a> {
         self.skip_whitespace();
 
         match self.read_char() {
+            Some('@') => Token::At,
+            Some('{') => Token::LeftCurlyParam,
+            Some('}') => Token::RightCurlyParam,
+            Some('[') => Token::LeftSquareParam,
+            Some(']') => Token::RightSquareParam,
+            Some('(') => Token::LeftParam,
+            Some(')') => Token::RightParam,
+            Some('?') => Token::QuestionMark,
+            Some('&') => Token::And,
+            Some('|') => Token::Or,
+            Some('!') => {
+                if self.peek_char_eq('=') {
+                    self.skip();
+                    Token::NotEqual
+                } else {
+                    Token::Not
+                }
+            },
+            Some('=') => {
+                if self.peek_char_eq('=') {
+                    self.skip();
+                    Token::Equal
+                } else {
+                    Token::Assignment
+                }
+            },
+            Some('+') => {
+                if self.peek_char_eq('=') {
+                    self.skip();
+                    Token::PlusAssignment
+                } else {
+                    Token::Plus
+                }
+            },
+            Some('-') => {
+                if self.peek_char_eq('=') {
+                    self.skip();
+                    Token::MinusAssignment
+                } else {
+                    Token::Minus
+                }
+            },
+            Some('*') => {
+                if self.peek_char_eq('=') {
+                    self.skip();
+                    Token::MulAssignment
+                } else {
+                    Token::Mul
+                }
+            },
+            Some('/') => {
+                if self.peek_char_eq('=') {
+                    self.skip();
+                    Token::DivAssignment
+                } else {
+                    Token::Div
+                }
+            },
+            Some('>') => {
+                if self.peek_char_eq('=') {
+                    self.skip();
+                    Token::GreaterEqual
+                } else {
+                    Token::GreaterThan
+                }
+            },
+            Some('<') => {
+                if self.peek_char_eq('=') {
+                    self.skip();
+                    Token::LessEqual
+                } else {
+                    Token::LessThan
+                }
+            },
             Some('"') => {
                 let string = self.read_string();
                 match self.read_char() {
                     Some(_) => Token::Str(string),
-                    None => Token::End, // error token, non ending string
+                    None => tokens::error("No end of string!"),
                 }
             },
-            Some(c @ _) => {
+            Some(c) => {
                 if is_letter(c) {
                     let ident = self.read_identifier(c);
                     tokens::lookup_identity(&ident)
