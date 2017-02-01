@@ -19,11 +19,15 @@ fn main() {
     let buf = read_file().unwrap();
     let mut lexer = lexer::Lexer::new(&buf);
 
-    loop {
-        let token = lexer.next_token();        
+    // loop {
+    //     let token = lexer.next_token();        
+    //     println!("{:?}", token);
+    //     if token == tokens::Token::EndOfFile {
+    //         break;
+    //     }
+    // }
+
+    for token in lexer {
         println!("{:?}", token);
-        if token == tokens::Token::End {
-            break;
-        }
     }
 }

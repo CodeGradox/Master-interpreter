@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     // Types
     Num(i32),
@@ -63,11 +63,11 @@ pub enum Token {
     ExclamationMark,
 
     // End of file
-    End,
-    Illegal,
+    EndOfFile,
 
-    // Used for errors
+    // Error in scannign and illegal characters
     Error(String),
+    Illegal(String),
 }
 
 pub fn lookup_identity(id: &str) -> Token {
@@ -84,6 +84,10 @@ pub fn lookup_identity(id: &str) -> Token {
         "nil" => Token::Nil,
         _ => Token::Ident(id.to_owned()),
     }
+}
+
+pub fn illegal_token(msg: &str) -> Token {
+    Token::Illegal(String::from(msg))
 }
 
 pub fn error(msg: &str) -> Token {
