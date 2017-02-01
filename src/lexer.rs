@@ -8,11 +8,15 @@ use std::iter::Peekable;
 
 pub struct Lexer<'a> {
     input: Peekable<Chars<'a>>,
+    line_num: u32,
 }
 
 impl<'a> Lexer<'a> {
     pub fn new(input: &'a str) -> Self {
-        Lexer { input: input.chars().peekable() }
+        Lexer {
+            input: input.chars().peekable(),
+            line_num: 1,
+        }
     }
 
     fn read_char(&mut self) -> Option<char> {
@@ -32,6 +36,9 @@ impl<'a> Lexer<'a> {
 
     fn skip_whitespace(&mut self) {
         while let Some(&c) = self.peek_char() {
+            if c == '\n' {
+                self.line_num += 1;
+            }
             if !c.is_whitespace() {
                 break;
             }
@@ -39,38 +46,38 @@ impl<'a> Lexer<'a> {
         }
     }
 
-    // fn skip_char(&mut self) {
-    //     self.read_char();
-    // }
-
-    fn read_while<F>(&mut self, first: char, func: F) -> String
+    fn read_while<F>(&mut self, buf: &mut String, func: F)
         where F: Fn(char) -> bool {
-        let mut buf = String::new();
-        buf.push(first);
-
         while let Some(&c) = self.peek_char() {
             if !func(c) {
                 break;
             }
             buf.push(self.read_char().unwrap());
         }
-        buf
     }
 
     fn read_identifier(&mut self, first: char) -> String {
-        self.read_while(first, is_alphanumeric)
+        let mut buf = String::new();
+        buf.push(first);
+        self.read_while(&mut buf, is_alphanumeric);
+        buf
     }
 
     fn read_number(&mut self, first: char) -> String {
-        self.read_while(first, is_numeric)
+        let mut buf = String::new();
+        buf.push(first);
+        self.read_while(&mut buf, is_numeric);
+        buf
     }
 
     fn read_real(&mut self, first: char) -> i32 {
         unimplemented!();
     }
 
-    fn read_string(&mut self, first: char) -> String {
-        self.read_while(first, |c| c != '"')
+    fn read_string(&mut self) -> String {
+        let mut buf = String::new();
+        self.read_while(&mut buf, |c| c != '"');
+        buf
     }
 
     pub fn next_token(&mut self) -> Token {
@@ -78,15 +85,10 @@ impl<'a> Lexer<'a> {
 
         match self.read_char() {
             Some('"') => {
-                let c = match self.read_char() {
-                    Some(c) => c,
-                    None => return Token::End,
-                };
-                let string = self.read_string(c);
-
+                let string = self.read_string();
                 match self.read_char() {
                     Some(_) => Token::Str(string),
-                    None => Token::End,
+                    None => Token::End, // error token, non ending string
                 }
             },
             Some(c @ _) => {
@@ -102,6 +104,10 @@ impl<'a> Lexer<'a> {
             },
             None => Token::End
         }
+    }
+
+    pub fn line_number(&self) -> u32 {
+        self.line_num
     }
 }
 
