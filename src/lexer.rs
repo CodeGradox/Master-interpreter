@@ -49,7 +49,8 @@ impl<'a> Lexer<'a> {
     }
 
     fn read_while<F>(&mut self, buf: &mut String, func: F)
-        where F: Fn(char) -> bool {
+        where F: Fn(char) -> bool
+    {
         while let Some(&c) = self.peek_char() {
             if !func(c) {
                 break;
@@ -106,7 +107,7 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::Not
                 }
-            },
+            }
             Some('=') => {
                 if self.peek_char_eq('=') {
                     self.skip();
@@ -114,7 +115,7 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::Assignment
                 }
-            },
+            }
             Some('+') => {
                 if self.peek_char_eq('=') {
                     self.skip();
@@ -122,7 +123,7 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::Plus
                 }
-            },
+            }
             Some('-') => {
                 if self.peek_char_eq('=') {
                     self.skip();
@@ -130,7 +131,7 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::Minus
                 }
-            },
+            }
             Some('*') => {
                 if self.peek_char_eq('=') {
                     self.skip();
@@ -138,7 +139,7 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::Mul
                 }
-            },
+            }
             Some('/') => {
                 if self.peek_char_eq('=') {
                     self.skip();
@@ -146,7 +147,7 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::Div
                 }
-            },
+            }
             Some('>') => {
                 if self.peek_char_eq('=') {
                     self.skip();
@@ -154,7 +155,7 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::GreaterThan
                 }
-            },
+            }
             Some('<') => {
                 if self.peek_char_eq('=') {
                     self.skip();
@@ -162,14 +163,14 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::LessThan
                 }
-            },
+            }
             Some('"') => {
                 let string = self.read_string();
                 match self.read_char() {
                     Some(_) => Token::Str(string),
                     None => tokens::error("No end of string!"),
                 }
-            },
+            }
             Some(c) => {
                 if is_letter(c) {
                     let ident = self.read_identifier(c);
@@ -181,8 +182,8 @@ impl<'a> Lexer<'a> {
                     let msg = format!("Found illegal char {}", c);
                     tokens::illegal_token(&msg)
                 }
-            },
-            None => Token::EndOfFile
+            }
+            None => Token::EndOfFile,
         }
     }
 
@@ -210,7 +211,10 @@ impl<'a> IntoIterator for Lexer<'a> {
     type Item = Token;
     type IntoIter = LexerIterator<'a>;
     fn into_iter(self) -> Self::IntoIter {
-        LexerIterator { lexer: self, finished: false }
+        LexerIterator {
+            lexer: self,
+            finished: false,
+        }
     }
 }
 

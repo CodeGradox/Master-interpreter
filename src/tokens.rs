@@ -7,7 +7,7 @@ pub enum Token {
     Nil,
 
     // Identifier
-    Ident(String),
+    Identity(String),
 
     // Assignment
     Assignment,
@@ -70,6 +70,7 @@ pub enum Token {
 }
 
 impl Token {
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_keyword(&self) -> bool {
         match *self {
             Token::At
@@ -87,6 +88,7 @@ impl Token {
         }
     }
 
+    #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_assignment(&self) -> bool {
         match *self {
             Token::Assignment
@@ -94,6 +96,17 @@ impl Token {
             | Token::MinusAssignment
             | Token::MulAssignment
             | Token::DivAssignment => true,
+            _ => false,
+        }
+    }
+
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    pub fn is_arithmetic(&self) -> bool {
+        match *self {
+            Token::Plus
+            | Token::Minus
+            | Token::Mul
+            | Token::Div => true,
             _ => false,
         }
     }
@@ -111,7 +124,7 @@ pub fn lookup_identity(id: &str) -> Token {
         "break" => Token::Break,
         "return" => Token::Return,
         "nil" => Token::Nil,
-        _ => Token::Ident(id.to_string()),
+        _ => Token::Identity(id.to_string()),
     }
 }
 
