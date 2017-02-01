@@ -32,20 +32,29 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    fn skip(&mut self) {
+        self.read_char();
+    }
+
+    fn skip_line(&mut self) {
+        while !self.peek_char_eq('\n') {
+             self.skip();
+        }
+    }
+
     fn skip_whitespace(&mut self) {
         while let Some(&c) = self.peek_char() {
             if c == '\n' {
                 self.line_num += 1;
+            } else if c == '#' {
+                self.skip_line();
+                continue;
             }
             if !c.is_whitespace() {
                 break;
             }
             self.read_char();
         }
-    }
-
-    fn skip(&mut self) {
-        self.read_char();
     }
 
     fn read_while<F>(&mut self, buf: &mut String, func: F)
