@@ -87,6 +87,9 @@ impl<'a> Lexer<'a> {
 
         match self.read_char() {
             Some('@') => Token::At,
+            Some('.') => Token::Dot,
+            Some(',') => Token::Comma,
+            Some(';') => Token::Semicolon,
             Some('{') => Token::LeftCurlyParam,
             Some('}') => Token::RightCurlyParam,
             Some('[') => Token::LeftSquareParam,

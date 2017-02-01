@@ -54,13 +54,12 @@ pub enum Token {
     For,
     Break,
     Return,
+    QuestionMark,
 
     // Misc
     Semicolon,
     Dot,
     Comma,
-    QuestionMark,
-    ExclamationMark,
 
     // End of file
     EndOfFile,
@@ -68,6 +67,36 @@ pub enum Token {
     // Error in scannign and illegal characters
     Error(String),
     Illegal(String),
+}
+
+impl Token {
+    pub fn is_keyword(&self) -> bool {
+        match *self {
+            Token::At
+            | Token::Function
+            | Token::True
+            | Token::False
+            | Token::If
+            | Token::Else
+            | Token::While
+            | Token::For
+            | Token::Break
+            | Token::Return
+            | Token::QuestionMark => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_assignment(&self) -> bool {
+        match *self {
+            Token::Assignment
+            | Token::PlusAssignment
+            | Token::MinusAssignment
+            | Token::MulAssignment
+            | Token::DivAssignment => true,
+            _ => false,
+        }
+    }
 }
 
 pub fn lookup_identity(id: &str) -> Token {
@@ -82,14 +111,14 @@ pub fn lookup_identity(id: &str) -> Token {
         "break" => Token::Break,
         "return" => Token::Return,
         "nil" => Token::Nil,
-        _ => Token::Ident(id.to_owned()),
+        _ => Token::Ident(id.to_string()),
     }
 }
 
 pub fn illegal_token(msg: &str) -> Token {
-    Token::Illegal(String::from(msg))
+    Token::Illegal(msg.to_string())
 }
 
 pub fn error(msg: &str) -> Token {
-    Token::Error(String::from(msg))
+    Token::Error(msg.to_string())
 }
