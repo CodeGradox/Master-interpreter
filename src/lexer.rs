@@ -242,33 +242,3 @@ fn is_numeric(c: char) -> bool {
 fn is_alphanumeric(c: char) -> bool {
     is_letter(c) || is_numeric(c)
 }
-
-impl<'a> IntoIterator for Lexer<'a> {
-    type Item = Token;
-    type IntoIter = LexerIterator<'a>;
-    fn into_iter(self) -> Self::IntoIter {
-        LexerIterator {
-            lexer: self,
-            finished: false,
-        }
-    }
-}
-
-pub struct LexerIterator<'a> {
-    lexer: Lexer<'a>,
-    finished: bool,
-}
-
-impl<'a> Iterator for LexerIterator<'a> {
-    type Item = Token;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.finished {
-            return None;
-        }
-        let ret = self.lexer.next_token();
-        if let Token::EndOfFile = ret {
-            self.finished = true;
-        }
-        Some(ret)
-    }
-}
