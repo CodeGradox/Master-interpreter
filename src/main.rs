@@ -1,6 +1,7 @@
 extern crate scanner;
 
 use scanner::lexer;
+use scanner::tokens;
 
 use std::io::Read;
 use std::fs::File;
@@ -18,7 +19,11 @@ fn main() {
     let buf = read_file().unwrap();
     let mut lexer = lexer::Lexer::new(&buf);
 
-    for token in lexer {
-        println!("{:?}", token);
+    loop {
+        let token = lexer.next_token();
+        println!("ln: {} at: {} - {:?}", lexer.line_number(), lexer.current_token_pos(), token);
+        if token == tokens::Token::EndOfFile {
+            break;
+        }
     }
 }

@@ -44,7 +44,8 @@ pub enum Token {
     RightSquareParam,
 
     // Keywords
-    At,
+    At, // @
+    By,
     Function,
     True,
     False,
@@ -58,8 +59,12 @@ pub enum Token {
 
     // Misc
     Semicolon,
-    Dot,
     Comma,
+    Dot,
+
+    // Ranges
+    ExclusiveRange,
+    InclusiveRange,
 
     // End of file
     EndOfFile,

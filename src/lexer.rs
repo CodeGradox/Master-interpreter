@@ -7,6 +7,8 @@ use std::iter::Peekable;
 pub struct Lexer<'a> {
     input: Peekable<Chars<'a>>,
     line_num: u32,
+    char_pos: u32,
+    token_pos: u32,
 }
 
 impl<'a> Lexer<'a> {
@@ -14,10 +16,13 @@ impl<'a> Lexer<'a> {
         Lexer {
             input: input.chars().peekable(),
             line_num: 1,
+            char_pos: 1,
+            token_pos: 1,
         }
     }
 
     fn read_char(&mut self) -> Option<char> {
+        self.char_pos += 1;
         self.input.next()
     }
 
@@ -46,6 +51,7 @@ impl<'a> Lexer<'a> {
         while let Some(&c) = self.peek_char() {
             if c == '\n' {
                 self.line_num += 1;
+                self.char_pos = 0;
             } else if c == '#' {
                 self.skip_line();
                 continue;
@@ -94,10 +100,10 @@ impl<'a> Lexer<'a> {
 
     pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
+        self.token_pos = self.char_pos;
 
         match self.read_char() {
             Some('@') => Token::At,
-            Some('.') => Token::Dot,
             Some(',') => Token::Comma,
             Some(';') => Token::Semicolon,
             Some('{') => Token::LeftCurlyParam,
@@ -180,6 +186,19 @@ impl<'a> Lexer<'a> {
                     None => tokens::error("No end of string!"),
                 }
             }
+            Some('.') => {
+                if self.peek_char_eq('.') {
+                    self.skip();
+                    if self.peek_char_eq('.') {
+                        self.skip();
+                        Token::InclusiveRange
+                    } else {
+                        Token::ExclusiveRange
+                    }
+                } else {
+                    Token::Dot
+                }
+            },
             Some(c) => {
                 if is_letter(c) {
                     let ident = self.read_identifier(c);
@@ -198,6 +217,14 @@ impl<'a> Lexer<'a> {
 
     pub fn line_number(&self) -> u32 {
         self.line_num
+    }
+
+    pub fn current_char_pos(&self) -> u32 {
+        self.char_pos
+    }
+
+    pub fn current_token_pos(&self) -> u32 {
+        self.token_pos
     }
 }
 
