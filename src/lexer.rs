@@ -125,6 +125,10 @@ impl<'a> Lexer<'a> {
     /// It traverses the input one `char` at the time and generates `Token`s.
     /// When the whole input has been scanned, the lexer will yield
     /// a `Token::EndOfFile` token.
+    ///
+    /// # Remarks
+    /// Calling this method will advance the lexer.
+    /// The lexer traverses the input only once.
     pub fn next_token(&mut self) -> Token {
         self.skip_whitespace();
         self.token_pos = self.char_pos;
