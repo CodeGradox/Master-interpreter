@@ -1,7 +1,7 @@
-extern crate scanner;
+extern crate interpreter;
 
-use scanner::lexer;
-use scanner::tokens;
+use interpreter::lexer;
+use interpreter::tokens;
 
 use std::io::Read;
 use std::fs::File;

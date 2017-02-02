@@ -1,4 +1,4 @@
 [root]
-name = "scanner"
+name = "interpreter"
 version = "0.1.0"
 

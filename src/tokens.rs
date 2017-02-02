@@ -1,3 +1,4 @@
+/// Represents a token returned by `Lexer::get_token`
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     // Types
@@ -71,10 +72,11 @@ pub enum Token {
 
     // Error in scannign and illegal characters
     Error(String),
-    Illegal(String),
+    Illegal(char),
 }
 
 impl Token {
+    /// Is this a keyword token?
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_keyword(&self) -> bool {
         match *self {
@@ -93,6 +95,7 @@ impl Token {
         }
     }
 
+    /// Is this an assignment token?
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_assignment(&self) -> bool {
         match *self {
@@ -105,6 +108,7 @@ impl Token {
         }
     }
 
+    /// Is this an arithmetic  token?
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_arithmetic(&self) -> bool {
         match *self {
@@ -117,6 +121,9 @@ impl Token {
     }
 }
 
+/// Performs a check on the input str `id` to see
+/// whenever it is a keyword token or a name token
+/// and then returns the coresponding `Token`.
 pub fn lookup_identity(id: &str) -> Token {
     match id {
         "fn" => Token::Function,
@@ -131,12 +138,4 @@ pub fn lookup_identity(id: &str) -> Token {
         "nil" => Token::Nil,
         _ => Token::Identity(id.to_string()),
     }
-}
-
-pub fn illegal_token(msg: &str) -> Token {
-    Token::Illegal(msg.to_string())
-}
-
-pub fn error(msg: &str) -> Token {
-    Token::Error(msg.to_string())
 }
