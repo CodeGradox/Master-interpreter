@@ -216,7 +216,7 @@ impl<'a> Lexer<'a> {
                 let string = self.read_string();
                 match self.read_char() {
                     Some(_) => Token::Str(string),
-                    None => Token::Error("No end of string!".to_string()),
+                    None => Token::StringError,
                 }
             }
             Some('.') => {

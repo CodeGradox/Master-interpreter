@@ -70,8 +70,8 @@ pub enum Token {
     // End of file
     EndOfFile,
 
-    // Error in scannign and illegal characters
-    Error(String),
+    // Error in scanning strings and illegal characters
+    StringError,
     Illegal(char),
 }
 
