@@ -110,6 +110,8 @@ impl<'a> Lexer<'a> {
         buf
     }
 
+    #[allow(dead_code)]
+    #[allow(unused_variables)]
     fn read_real(&mut self, first: char) -> i32 {
         unimplemented!();
     }
@@ -268,11 +270,19 @@ impl<'a> Lexer<'a> {
 }
 
 impl<'a> Iterator for Lexer<'a> {
-    type Item = (Token, u32, u32);
+    /// The type of the elements being iterated over.
+    /// `Token` is the current token.
+    /// The first `u32` is the current line number.
+    /// The second `u32` is the current character position.
+    /// The thirs `u32` is the starting position of the `Token`.
+    type Item = (Token, u32, u32, u32);
+
+    /// Advances the iterator and returns the next value.
+    /// It returns `None` when the `Lexer` returns a `Token::EndOfFile` token.
     fn next(&mut self) -> Option<Self::Item> {
         match self.next_token() {
             Token::EndOfFile => None,
-            token => Some((token, self.current_char_pos(), self.current_token_pos())),
+            token => Some((token, self.line_number(), self.current_char_pos(), self.current_token_pos())),
         }
     }
 }

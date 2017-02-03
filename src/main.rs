@@ -1,12 +1,11 @@
 extern crate interpreter;
 
 use interpreter::lexer;
-use interpreter::tokens;
 
 use std::io::Read;
 use std::fs::File;
 
-const FILE_NAME: &'static str = "testfile";
+const FILE_NAME: &'static str = "tests/random.txt";
 
 fn read_file() -> Result<String, std::io::Error> {
     let mut buf = String::new();
@@ -17,13 +16,10 @@ fn read_file() -> Result<String, std::io::Error> {
 
 fn main() {
     let buf = read_file().unwrap();
-    let mut lexer = lexer::Lexer::new(&buf);
+    let lexer = lexer::Lexer::new(&buf);
+    let mut peek = lexer.peekable();
 
-    loop {
-        let token = lexer.next_token();
-        println!("ln: {} at: {} - {:?}", lexer.line_number(), lexer.current_token_pos(), token);
-        if token == tokens::Token::EndOfFile {
-            break;
-        }
+    while let Some((token, line_num, _, token_pos)) = peek.next() {
+        println!("ln: {} at: {} - {:?}", line_num, token_pos, token);
     }
 }
