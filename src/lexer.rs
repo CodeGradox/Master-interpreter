@@ -267,6 +267,16 @@ impl<'a> Lexer<'a> {
     }
 }
 
+impl<'a> Iterator for Lexer<'a> {
+    type Item = (Token, u32, u32);
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.next_token() {
+            Token::EndOfFile => None,
+            token => Some((token, self.current_char_pos(), self.current_token_pos())),
+        }
+    }
+}
+
 /// Checks if `c` is a letter or a underscore (`_`).
 fn is_letter(c: char) -> bool {
     c.is_alphabetic() || c == '_'
