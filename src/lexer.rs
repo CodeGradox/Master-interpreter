@@ -56,7 +56,7 @@ impl<'a> Lexer<'a> {
     /// or until the end of file is reached.
     fn skip_line(&mut self) {
         while !self.peek_char_eq('\n') {
-             self.skip();
+            self.skip();
         }
     }
 
@@ -231,7 +231,7 @@ impl<'a> Lexer<'a> {
                 } else {
                     Token::Dot
                 }
-            },
+            }
             Some(c) => {
                 if is_letter(c) {
                     let ident = self.read_identifier(c);
@@ -282,7 +282,9 @@ impl<'a> Iterator for Lexer<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         match self.next_token() {
             Token::EndOfFile => None,
-            token => Some((token, self.line_number(), self.current_char_pos(), self.current_token_pos())),
+            token => {
+                Some((token, self.line_number(), self.current_char_pos(), self.current_token_pos()))
+            }
         }
     }
 }
