@@ -17,9 +17,8 @@ fn read_file() -> Result<String, std::io::Error> {
 fn main() {
     let buf = read_file().unwrap();
     let lexer = lexer::Lexer::new(&buf);
-    let mut peek = lexer.peekable();
 
-    while let Some((token, line_num, _, token_pos)) = peek.next() {
+    for (token, line_num, _, token_pos) in lexer {
         println!("ln: {} at: {} - {:?}", line_num, token_pos, token);
     }
 }
