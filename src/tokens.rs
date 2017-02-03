@@ -124,8 +124,8 @@ impl Token {
 /// Performs a check on the input str `id` to see
 /// whenever it is a keyword token or a name token
 /// and then returns the coresponding `Token`.
-pub fn lookup_identity(id: &str) -> Token {
-    match id {
+pub fn lookup_identity(id: String) -> Token {
+    match id.as_str() {
         "fn" => Token::Function,
         "true" => Token::True,
         "false" => Token::False,
@@ -136,6 +136,6 @@ pub fn lookup_identity(id: &str) -> Token {
         "break" => Token::Break,
         "return" => Token::Return,
         "nil" => Token::Nil,
-        _ => Token::Identity(id.to_string()),
+        _ => Token::Identity(id),
     }
 }

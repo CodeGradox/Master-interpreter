@@ -235,7 +235,7 @@ impl<'a> Lexer<'a> {
             Some(c) => {
                 if is_letter(c) {
                     let ident = self.read_identifier(c);
-                    tokens::lookup_identity(&ident)
+                    tokens::lookup_identity(ident)
                 } else if is_numeric(c) {
                     let num = self.read_number(c);
                     Token::Num(num.parse().unwrap())
