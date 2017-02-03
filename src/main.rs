@@ -6,7 +6,7 @@ use interpreter::tokens;
 use std::io::Read;
 use std::fs::File;
 
-const FILE_NAME: &'static str = "test";
+const FILE_NAME: &'static str = "testfile";
 
 fn read_file() -> Result<String, std::io::Error> {
     let mut buf = String::new();

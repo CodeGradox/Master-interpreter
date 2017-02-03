@@ -10,4 +10,8 @@ name = "interpreter"
 name = "interpreter_bin"
 doc = false
 
+[[test]]
+name = "interpreter_test"
+path = "tests/lib.rs"
+
 [dependencies]
