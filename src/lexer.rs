@@ -254,13 +254,6 @@ impl<'a> Lexer<'a> {
         self.line_num
     }
 
-    /// Returns the current `char` position.
-    ///
-    /// It returns `1` if `next_token()` hasn't been called.
-    pub fn current_char_pos(&self) -> u32 {
-        self.char_pos
-    }
-
     /// Returns the starting position of the last generated `Token`.
     ///
     /// It returns `1` if `next_token()` hasn't been called.
@@ -273,9 +266,8 @@ impl<'a> Iterator for Lexer<'a> {
     /// The type of the elements being iterated over.
     /// `Token` is the current token.
     /// The first `u32` is the current line number.
-    /// The second `u32` is the current character position.
-    /// The thirs `u32` is the starting position of the `Token`.
-    type Item = (Token, u32, u32, u32);
+    /// The second `u32` is the starting position of the `Token`.
+    type Item = (Token, u32, u32);
 
     /// Advances the iterator and returns the next value.
     /// It returns `None` when the `Lexer` returns a `Token::EndOfFile` token.
@@ -283,7 +275,7 @@ impl<'a> Iterator for Lexer<'a> {
         match self.next_token() {
             Token::EndOfFile => None,
             token => {
-                Some((token, self.line_number(), self.current_char_pos(), self.current_token_pos()))
+                Some((token, self.line_number(), self.current_token_pos()))
             }
         }
     }
