@@ -49,8 +49,7 @@ fn test_string() {
 
 #[test]
 fn test_string_escape() {
-    let string = "\" \\\\ \\n \\t \\r \"".to_string();
-    let mut lexer = lexer::Lexer::new(&string);
+    let mut lexer = lexer::Lexer::new("\" \\\\ \\n \\t \\r \"");
     let tokens = vec![Token::Str(" \\\\ \\n \\t \\r ".to_string()), Token::EndOfFile];
 
     for t in &tokens {
@@ -58,4 +57,10 @@ fn test_string_escape() {
             assert_eq!(token, *t);
         }
     }
+}
+
+#[test]
+fn test_string_illegal_newline() {
+    let mut lexer = lexer::Lexer::new("\"\n\"");
+    assert_eq!(Token::Illegal('\n'), lexer.next_token());
 }

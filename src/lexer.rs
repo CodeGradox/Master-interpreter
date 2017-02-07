@@ -120,6 +120,9 @@ impl<'a> Lexer<'a> {
     fn read_string(&mut self) -> Result<String, Token> {
         let mut buf = String::new();
         while let Some(&c) = self.peek_char() {
+            if c == '\n' {
+                return Err(Token::Illegal(c));
+            }
             if c == '\\' {
                 buf.push(self.read_char().unwrap());
                 if let Some(&peek) = self.peek_char() {
