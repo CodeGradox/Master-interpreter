@@ -117,26 +117,27 @@ impl<'a> Lexer<'a> {
     }
 
     /// Reads a string literal from the input.
-    fn read_string(&mut self) -> Result<String, Token> {
+    fn read_string(&mut self) -> Token {
         let mut buf = String::new();
         while let Some(&c) = self.peek_char() {
             if c == '\\' {
                 buf.push(self.read_char().unwrap());
-                if let Some(&peek) = self.peek_char() {
-                    if !is_escape_char(peek) {
-                        return Err(Token::UnknownEscape(peek));
-                    }
-                } else {
-                    return Err(Token::Illegal(c));
+                match self.peek_char() {
+                    Some(&p) =>
+                        if !is_escape_char(p) {
+                            return Token::UnknownEscape(p);
+                        },
+                    None => break,
                 }
             } else if c == '\n' {
-                return Err(Token::StringEOL);
+                return Token::StringEOL;
             } else if c == '"' {
-                break;
+                self.skip();
+                return Token::Str(buf);
             }
             buf.push(self.read_char().unwrap());
         }
-        Ok(buf)
+        Token::NonTerminatingString
     }
 
     /// Generates a `Token` from the characters read from the input.
@@ -228,17 +229,6 @@ impl<'a> Lexer<'a> {
                     Token::LessThan
                 }
             }
-            Some('"') => {
-                match self.read_string() {
-                    Ok(s) => {
-                        match self.read_char() {
-                            Some(_) => Token::Str(s),
-                            None => Token::NonTerminatingString,
-                        }
-                    }
-                    Err(e) => e,
-                }
-            }
             Some('.') => {
                 if self.peek_char_eq('.') {
                     self.skip();
@@ -252,6 +242,7 @@ impl<'a> Lexer<'a> {
                     Token::Dot
                 }
             }
+            Some('"') => self.read_string(),
             Some(c) => {
                 if is_letter(c) {
                     let ident = self.read_identifier(c);

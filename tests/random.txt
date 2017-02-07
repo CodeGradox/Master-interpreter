@@ -12,3 +12,4 @@ xd #wedwe
 3.14
 
 34+85..93
+"This is a string"
