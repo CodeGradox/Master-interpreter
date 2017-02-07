@@ -53,9 +53,8 @@ fn test_string_escape() {
     let tokens = vec![Token::Str(" \\\\ \\n \\t \\r ".to_string()), Token::EndOfFile];
 
     for t in &tokens {
-        let token = lexer.next_token(); {
-            assert_eq!(token, *t);
-        }
+        let token = lexer.next_token();
+        assert_eq!(token, *t);
     }
 }
 

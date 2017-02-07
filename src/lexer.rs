@@ -295,9 +295,7 @@ impl<'a> Iterator for Lexer<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         match self.next_token() {
             Token::EndOfFile => None,
-            token => {
-                Some((token, self.line_number(), self.current_token_pos()))
-            }
+            token => Some((token, self.line_number(), self.current_token_pos())),
         }
     }
 }
