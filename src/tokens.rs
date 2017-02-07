@@ -73,6 +73,7 @@ pub enum Token {
     // Error in scanning strings and illegal characters
     StringError,
     Illegal(char),
+    IllegalEscape(char),
 }
 
 impl Token {

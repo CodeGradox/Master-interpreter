@@ -117,10 +117,24 @@ impl<'a> Lexer<'a> {
     }
 
     /// Reads a string literal from the input.
-    fn read_string(&mut self) -> String {
+    fn read_string(&mut self) -> Result<String, Token> {
         let mut buf = String::new();
-        self.read_while(&mut buf, |c| c != '"');
-        buf
+        while let Some(&c) = self.peek_char() {
+            if c == '\\' {
+                buf.push(self.read_char().unwrap());
+                if let Some(&peek) = self.peek_char() {
+                    if !is_escape_char(peek) {
+                        return Err(Token::IllegalEscape(peek));
+                    }
+                } else {
+                    return Err(Token::Illegal(c));
+                }
+            } else if c == '"' {
+                break;
+            }
+            buf.push(self.read_char().unwrap());
+        }
+        Ok(buf)
     }
 
     /// Generates a `Token` from the characters read from the input.
@@ -213,10 +227,14 @@ impl<'a> Lexer<'a> {
                 }
             }
             Some('"') => {
-                let string = self.read_string();
-                match self.read_char() {
-                    Some(_) => Token::Str(string),
-                    None => Token::StringError,
+                match self.read_string() {
+                    Ok(s) => {
+                        match self.read_char() {
+                            Some(_) => Token::Str(s),
+                            None => Token::StringError,
+                        }
+                    }
+                    Err(e) => e,
                 }
             }
             Some('.') => {
@@ -297,4 +315,12 @@ fn is_numeric(c: char) -> bool {
 /// Chekcs is `c` is a number, letter or a underscore (`_`).
 fn is_alphanumeric(c: char) -> bool {
     is_letter(c) || is_numeric(c)
+}
+
+/// Returns true if c is an escape character
+fn is_escape_char(c: char) -> bool {
+    match c {
+        '"' | 'n' | 't' | 'r' | '\\' => true,
+        _ => false,
+    }
 }
