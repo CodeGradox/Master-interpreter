@@ -234,7 +234,7 @@ impl<'a> Lexer<'a> {
                     Ok(s) => {
                         match self.read_char() {
                             Some(_) => Token::Str(s),
-                            None => Token::StringError,
+                            None => Token::NonTerminatingString,
                         }
                     }
                     Err(e) => e,

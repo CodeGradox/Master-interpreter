@@ -24,7 +24,7 @@ fn next_token_test() {
 #[test]
 fn test_neverending_string() {
     let mut lexer = lexer::Lexer::new("\"This string never ends");
-    let tokens = vec![Token::StringError, Token::EndOfFile];
+    let tokens = vec![Token::NonTerminatingString, Token::EndOfFile];
 
     for t in &tokens {
         let token = lexer.next_token();
