@@ -8,6 +8,6 @@ pub struct Parser<'a> {
 
 impl<'a> Parser<'a> {
     pub fn new(input: &'a str) -> Self {
-        Parser { lexer: Lexer::new(&input).peekable() }
+        Parser { lexer: Lexer::new(input).peekable() }
     }
 }

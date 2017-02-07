@@ -75,9 +75,9 @@ pub enum Token {
 
     // Error tokens
     NonTerminatingString,
-    StringEOF,
+    StringEOL,
     Illegal(char),
-    IllegalEscape(char),
+    UnknownEscape(char),
 }
 
 impl Token {
@@ -130,8 +130,9 @@ impl Token {
     pub fn is_error(&self) -> bool {
         match *self {
               NonTerminatingString
+            | StringEOL
             | Illegal(_)
-            | IllegalEscape(_) => true,
+            | UnknownEscape(_) => true,
             _ => false,
         }
     }
@@ -140,12 +141,12 @@ impl Token {
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn error_msg(&self) -> Cow<'static, str> {
         match *self {
-            NonTerminatingString => Cow::Borrowed("error: unterminated string"),
-            StringEOF => Cow::Borrowed("error: found newline while scanning string"),
+            NonTerminatingString => Cow::Borrowed("error: nonterminated string"),
+            StringEOL => Cow::Borrowed("error: found newline while scanning string"),
             Illegal(c) => Cow::Owned(format!("error: illegal character {}", c)),
-            IllegalEscape(c) => {
+            UnknownEscape(c) => {
                 let esc: String = c.escape_default().collect();
-                Cow::Owned(format!("error: found illegal escape character '{}' in string literal", esc))
+                Cow::Owned(format!("error: unknown escape: '{}' in string literal", esc))
             }
             _ => Cow::Borrowed(""),
         }

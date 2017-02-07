@@ -61,5 +61,5 @@ fn test_string_escape() {
 #[test]
 fn test_string_illegal_newline() {
     let mut lexer = lexer::Lexer::new("\"\n\"");
-    assert_eq!(Token::Illegal('\n'), lexer.next_token());
+    assert_eq!(Token::StringEOL, lexer.next_token());
 }
