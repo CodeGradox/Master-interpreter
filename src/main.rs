@@ -18,7 +18,7 @@ fn main() {
     let buf = read_file().unwrap();
     let lexer = lexer::Lexer::new(&buf);
 
-    for (token, line_num, token_pos) in lexer {
-        println!("ln: {} at: {} - {:?}", line_num, token_pos, token);
+    for item in lexer {
+        println!("{:?}", item);
     }
 }
