@@ -1,6 +1,8 @@
 use tokens::Token::*;
 use tokens::LexerError::*;
 
+pub type LexerResult = Result<Token, LexerError>;
+
 /// Represents a valid token returned by `Lexer::get_token`
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
@@ -126,20 +128,22 @@ pub enum LexerError {
     StringEOL,
     Illegal(char),
     UnknownEscape(char),
+    IntLiteralTooLarge,
 }
 
 impl LexerError {
     /// Prints out the error and it's location.
     pub fn print_err(&self, line: u32, pos: u32) {
-        println!("error! line: {} col {}", line, pos);
+        print!("error! line: {} col {}\n\t", line, pos);
         match *self {
-            NonTerminatingString => println!("\tnonterminating string, found end of file"),
-            StringEOL => println!("\tnonterminating string, found newline"),
-            Illegal(c) => println!("\tfound illegal token {}", c),
+            NonTerminatingString => println!("nonterminating string, found end of file"),
+            StringEOL => println!("nonterminating string, found newline"),
+            Illegal(c) => println!("found illegal token {}", c),
             UnknownEscape(c) => {
                 let esc: String = c.escape_default().collect();
-                println!("\tunknown escape code {}", esc);
+                println!("unknown escape code {}", esc);
             }
+            IntLiteralTooLarge => println!("int literal too large"),
         }
     }
 }
