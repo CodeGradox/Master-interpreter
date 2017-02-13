@@ -51,3 +51,5 @@ no, found ; or something else
 expression is done.
 return AST
 3 + (4 * 2 * 4) - 2
+
+((float) 0.bbb) * 2^16 -> runde av til int

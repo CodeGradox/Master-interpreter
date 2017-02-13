@@ -6,11 +6,11 @@ use interpreter::tokens::{Token, LexerError};
 #[test]
 fn next_token_test() {
     let mut lexer = lexer::Lexer::new("1 + 3 * 5");
-    let tokens = vec![Ok(Token::Int("1".to_string())),
+    let tokens = vec![Ok(Token::Int(1)),
                       Ok(Token::Plus),
-                      Ok(Token::Int("3".to_string())),
+                      Ok(Token::Int(3)),
                       Ok(Token::Mul),
-                      Ok(Token::Int("5".to_string())),
+                      Ok(Token::Int(5)),
                       Ok(Token::EndOfFile)];
 
     for t in &tokens {

@@ -122,7 +122,7 @@ impl<'a> Lexer<'a> {
             }
             // else we just return the int
         }
-        Token::Int(buf)
+        Token::Int(buf.parse().unwrap())
     }
 
     /// Reads a string literal from the input.
