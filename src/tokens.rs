@@ -5,8 +5,8 @@ use tokens::LexerError::*;
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     // Types
-    Num(i32),
-    // Real(i32),
+    Int(String),
+    Real(String),
     Str(String),
     Nil,
 

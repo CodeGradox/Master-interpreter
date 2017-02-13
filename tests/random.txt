@@ -11,5 +11,5 @@ xd #wedwe
                     # dwekdpkew
 3.14
 
-34+85..93
+34+85.0...93
 "This is a string"

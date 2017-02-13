@@ -95,25 +95,34 @@ impl<'a> Lexer<'a> {
     }
 
     /// Reads an identifier string from the input.
-    fn read_identifier(&mut self, first: char) -> String {
+    fn read_identifier(&mut self, first: char) -> Token {
         let mut buf = String::new();
         buf.push(first);
         self.read_while(&mut buf, is_alphanumeric);
-        buf
+        tokens::lookup_identity(buf)
     }
 
     /// Reads a number from the input.
-    fn read_number(&mut self, first: char) -> String {
+    fn read_number(&mut self, first: char) -> Token {
         let mut buf = String::new();
         buf.push(first);
         self.read_while(&mut buf, is_numeric);
-        buf
-    }
 
-    #[allow(dead_code)]
-    #[allow(unused_variables)]
-    fn read_real(&mut self, first: char) -> i32 {
-        unimplemented!();
+        // The number can be followed by a decimal or a range
+        if self.peek_char_eq('.') {
+            // so we need to find out how many dots there are
+            let count = self.input.clone()
+                .take_while(|&x| x == '.')
+                .take(2)
+                .count();
+            if count == 1 {
+                buf.push(self.read_char().unwrap());
+                self.read_while(&mut buf, is_numeric);
+                return Token::Real(buf);
+            }
+            // else we just return the int
+        }
+        Token::Int(buf)
     }
 
     /// Reads a string literal from the input.
@@ -248,14 +257,11 @@ impl<'a> Lexer<'a> {
                         Ok(Token::Dot)
                     }
                 }
+                '0'...'9' => Ok(self.read_number(c)),
                 '"' => self.read_string(),
                 _ => {
                     if is_letter(c) {
-                        let ident = self.read_identifier(c);
-                        Ok(tokens::lookup_identity(ident))
-                    } else if is_numeric(c) {
-                        let num = self.read_number(c);
-                        Ok(Token::Num(num.parse().unwrap()))
+                        Ok(self.read_identifier(c))
                     } else {
                         Err(LexerError::Illegal(c))
                     }
