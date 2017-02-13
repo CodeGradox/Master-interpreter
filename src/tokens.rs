@@ -133,12 +133,12 @@ impl LexerError {
     pub fn print_err(&self, line: u32, pos: u32) {
         println!("error! line: {} col {}", line, pos);
         match *self {
-            NonTerminatingString => println!("nonterminating string, found end of file"),
-            StringEOL => println!("nonterminating string, found newline"),
-            Illegal(c) => println!("found illegal token {}", c),
+            NonTerminatingString => println!("\tnonterminating string, found end of file"),
+            StringEOL => println!("\tnonterminating string, found newline"),
+            Illegal(c) => println!("\tfound illegal token {}", c),
             UnknownEscape(c) => {
                 let esc: String = c.escape_default().collect();
-                println!("unknown escape code {}", esc);
+                println!("\tunknown escape code {}", esc);
             }
         }
     }
