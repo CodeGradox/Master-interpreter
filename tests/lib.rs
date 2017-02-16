@@ -4,6 +4,7 @@ use interpreter::lexer;
 use interpreter::tokens::{Token, LexerError};
 
 #[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn next_token_test() {
     let mut lexer = lexer::Lexer::new("1 + 3 * 5");
     let tokens = vec![Ok(Token::Int(1)),
@@ -20,6 +21,7 @@ fn next_token_test() {
 }
 
 #[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_neverending_string() {
     let mut lexer = lexer::Lexer::new("\"This string never ends");
     let tokens = vec![Err(LexerError::NonTerminatingString), Ok(Token::EndOfFile)];
@@ -31,6 +33,7 @@ fn test_neverending_string() {
 }
 
 #[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_string() {
     let mut lexer = lexer::Lexer::new("\"Hello World\"\
     \"\"
@@ -49,6 +52,7 @@ fn test_string() {
 }
 
 #[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_string_escape() {
     let mut lexer = lexer::Lexer::new("\" \\\\ \\n \\t \\r \"");
     let tokens = vec![Ok(Token::Str(" \\\\ \\n \\t \\r ".to_string())), Ok(Token::EndOfFile)];
@@ -60,6 +64,7 @@ fn test_string_escape() {
 }
 
 #[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_string_illegal_newline() {
     let mut lexer = lexer::Lexer::new("\"\n\"\\");
     assert_eq!(Err(LexerError::StringEOL), lexer.next_token());
@@ -67,6 +72,7 @@ fn test_string_illegal_newline() {
 }
 
 #[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_error_tokens() {
     let mut lexer = lexer::Lexer::new("$%`^~");
     let tokens = vec![Err(LexerError::Illegal('$')),
@@ -82,6 +88,7 @@ fn test_error_tokens() {
 }
 
 #[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_error_messages() {
     let mut lexer = lexer::Lexer::new("\"\n\
     💡 \

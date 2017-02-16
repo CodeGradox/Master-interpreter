@@ -53,3 +53,23 @@ return AST
 3 + (4 * 2 * 4) - 2
 
 ((float) 0.bbb) * 2^16 -> runde av til int
+
+## Explain how real is represented in the interpreter
+i32, how it implements the traits for plus, minus, mul and div.
+Explain briefly what a trait is and how we cannot overload primitive operators like `+`
+in Java, but can do it in C++.
+
+1 000 000 000 000 000
+
+### overflow and underflow
+u32 max is 4294967296
+so if we use 2 << 15 as the max value for reals (so that we can represent negative numbers),
+then we should be able to multiply two real::max and still not overflow.
+(2**15 * << 16) * 2 = 4294967296
+
+## Fuck it, we'll use flatt to convert from string to real
+Explain how this won't impact performance too much as the RTIMULib uses floats for the
+sensor values. So whenever we want to get values from the sensors we are always using
+float operations. We can argue that, for an implementation where using floats is too
+slow and power consuming, it would be wiser to not use floats and instead find another
+way to parse float to real using only integer arithmetic.

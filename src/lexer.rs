@@ -115,7 +115,8 @@ impl<'a> Lexer<'a> {
         // The number can be followed by a decimal or a range
         if self.peek_char_eq('.') {
             // so we need to find out how many dots there are
-            let count = self.input.clone()
+            let count = self.input
+                .clone()
                 .take_while(|&x| x == '.')
                 .take(2)
                 .count();
@@ -126,6 +127,8 @@ impl<'a> Lexer<'a> {
             }
             // else we just return the int
         }
+        // This solution will not handle -2147483648 because
+        // it does not know if the previous token was a `Minus`.
         match buf.parse() {
             Ok(val) => Ok(Token::Int(val)),
             Err(_) => Err(LexerError::IntLiteralTooLarge),
