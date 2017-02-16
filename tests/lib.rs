@@ -2,6 +2,7 @@ extern crate interpreter;
 
 use interpreter::lexer;
 use interpreter::tokens::{Token, LexerError};
+use interpreter::real::Real;
 
 #[test]
 #[cfg_attr(rustfmt, rustfmt_skip)]
@@ -104,4 +105,66 @@ fn test_error_messages() {
         let token = lexer.next_token();
         assert_eq!(token, *t);
     }
+}
+
+#[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
+fn test_real_int() {
+    let a = Real::from(64);
+    let b = Real::parse("64").unwrap();
+    let c = Real::from(64.);
+    assert!(a == b);
+    assert!(a == c);
+}
+
+#[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
+fn test_real_fraction() {
+    let a = Real::parse("3.14").unwrap();
+    let b = Real::from(3.14);
+    assert!(a == b);
+}
+
+#[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
+fn test_real_parse() {
+    assert!(Real::parse("3.14").is_ok());
+    assert!(Real::parse("3.").is_ok());
+    assert!(Real::parse("3").is_ok());
+    assert!(Real::parse(".").is_err());
+    assert!(Real::parse("").is_err());
+    assert!(Real::parse(".14").is_err());
+}
+
+
+#[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
+fn test_real_add() {
+    let a = Real::from(97);
+    let b = Real::from(3.0);
+    assert!(a + b == Real::from(100));
+}
+
+#[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
+fn test_real_sub() {
+    let a = Real::from(3.5);
+    let b = Real::from(3.0);
+    assert!(a - b == Real::from(0.5));
+}
+
+#[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
+fn test_real_mul() {
+    let a = Real::from(2);
+    let b = Real::from(2.0);
+    assert!(a * b == Real::from(4));
+}
+
+#[test]
+#[cfg_attr(rustfmt, rustfmt_skip)]
+fn test_real_div() {
+    let a = Real::from(25);
+    let b = Real::from(5.0);
+    assert!(a / b == Real::from(5));
 }
