@@ -16,16 +16,14 @@ fn read_file() -> Result<String, std::io::Error> {
 }
 
 fn main() {
-    let r = real::Real::parse("30.25").unwrap();
-    let f = real::Real::parse("5.5").unwrap();
-    println!("{} + {} = {}", r, f, r / f);
-    // let buf = read_file().unwrap();
-    // let lexer = lexer::Lexer::new(&buf);
+    let buf = read_file().unwrap();
+    let lexer = lexer::Lexer::new(&buf);
 
-    // for (item, line, pos) in lexer {
-    //     match item {
-    //         Ok(token) => println!("ln: {} col: {}\n\t {:?}", line, pos, token),
-    //         Err(e) => e.print_err(line, pos),
-    //     }
-    // }
+    for (item, line, pos) in lexer {
+        print!("ln: {} col: {}\n\t", line, pos);
+        match item {
+            Ok(token) => println!("{}", token),
+            Err(e) => println!("{}", e),
+        }
+    }
 }

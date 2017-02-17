@@ -1,5 +1,9 @@
+use std::fmt;
+use std::error::Error as StdError;
+
 use tokens::Token::*;
 use tokens::LexerError::*;
+use real::Real;
 
 pub type LexerResult = Result<Token, LexerError>;
 
@@ -8,7 +12,7 @@ pub type LexerResult = Result<Token, LexerError>;
 pub enum Token {
     // Types
     Int(i32),
-    Real(String),
+    Real(Real),
     Str(String),
     Nil,
 
@@ -121,6 +125,19 @@ impl Token {
     }
 }
 
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // write!(f, "{:?}", self)
+        match *self {
+            Int(i) => write!(f, "Int: {}", i),
+            Real(r) => write!(f, "Real: {}", r),
+            Str(ref s) => write!(f, "Str: \"{}\"", s),
+            Identity(ref i) => write!(f, "Identity: \"{}\"", i),
+            _ => write!(f, "{:?}", self),
+        }
+    }
+}
+
 /// Represents a error encountered during the lexical analysis.
 #[derive(Debug, Clone, PartialEq)]
 pub enum LexerError {
@@ -129,22 +146,36 @@ pub enum LexerError {
     Illegal(char),
     UnknownEscape(char),
     IntLiteralTooLarge,
+    RealParseError,
 }
 
-impl LexerError {
-    /// Prints out the error and it's location.
-    pub fn print_err(&self, line: u32, pos: u32) {
-        print!("error! line: {} col {}\n\t", line, pos);
+impl fmt::Display for LexerError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
-            NonTerminatingString => println!("nonterminating string, found end of file"),
-            StringEOL => println!("nonterminating string, found newline"),
-            Illegal(c) => println!("found illegal token {}", c),
+            Illegal(c) => write!(f, "{} {}", self.description(), c),
             UnknownEscape(c) => {
-                let esc: String = c.escape_default().collect();
-                println!("unknown escape code {}", esc);
+                let s: String = c.escape_default().collect();
+                write!(f, "{} {}", self.description(), s)
             }
-            IntLiteralTooLarge => println!("int literal too large"),
+            _ => f.write_str(self.description()),
         }
+    }
+}
+
+impl StdError for LexerError {
+    fn description(&self) -> &str {
+        match *self {
+            NonTerminatingString => "string never ends",
+            StringEOL => "found newline in string literal",
+            Illegal(_) => "found illegal character",
+            UnknownEscape(_) => "found unknow escape code",
+            IntLiteralTooLarge => "int literal too large",
+            RealParseError => "could not parse real literal",
+        }
+    }
+
+    fn cause(&self) -> Option<&StdError> {
+        None
     }
 }
 

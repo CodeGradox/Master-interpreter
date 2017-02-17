@@ -1,5 +1,6 @@
 use tokens;
 use tokens::{Token, LexerError, LexerResult};
+use real;
 
 use std::str::Chars;
 use std::iter::Peekable;
@@ -123,7 +124,9 @@ impl<'a> Lexer<'a> {
             if count == 1 {
                 buf.push(self.read_char().unwrap());
                 self.read_while(&mut buf, is_numeric);
-                return Ok(Token::Real(buf));
+                return real::Real::parse(&buf)
+                    .map(|r| Token::Real(r))
+                    .or(Err(LexerError::RealParseError));
             }
             // else we just return the int
         }
