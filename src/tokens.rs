@@ -1,12 +1,14 @@
 use tokens::Token::*;
-use std::borrow::Cow;
+use tokens::LexerError::*;
 
-/// Represents a token returned by `Lexer::get_token`
+pub type LexerResult = Result<Token, LexerError>;
+
+/// Represents a valid token returned by `Lexer::get_token`
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
     // Types
-    Num(i32),
-    // Real(i32),
+    Int(i32),
+    Real(String),
     Str(String),
     Nil,
 
@@ -70,14 +72,7 @@ pub enum Token {
     ExclusiveRange,
     InclusiveRange,
 
-    // End of file
     EndOfFile,
-
-    // Error tokens
-    NonTerminatingString,
-    StringEOL,
-    Illegal(char),
-    UnknownEscape(char),
 }
 
 impl Token {
@@ -124,31 +119,31 @@ impl Token {
             _ => false,
         }
     }
+}
 
-    /// Is this an error token?
-    #[cfg_attr(rustfmt, rustfmt_skip)]
-    pub fn is_error(&self) -> bool {
-        match *self {
-              NonTerminatingString
-            | StringEOL
-            | Illegal(_)
-            | UnknownEscape(_) => true,
-            _ => false,
-        }
-    }
+/// Represents a error encountered during the lexical analysis.
+#[derive(Debug, Clone, PartialEq)]
+pub enum LexerError {
+    NonTerminatingString,
+    StringEOL,
+    Illegal(char),
+    UnknownEscape(char),
+    IntLiteralTooLarge,
+}
 
-    /// Returns the error message for the error tokens
-    #[cfg_attr(rustfmt, rustfmt_skip)]
-    pub fn error_msg(&self) -> Cow<'static, str> {
+impl LexerError {
+    /// Prints out the error and it's location.
+    pub fn print_err(&self, line: u32, pos: u32) {
+        print!("error! line: {} col {}\n\t", line, pos);
         match *self {
-            NonTerminatingString => Cow::Borrowed("error: nonterminated string"),
-            StringEOL => Cow::Borrowed("error: found newline while scanning string"),
-            Illegal(c) => Cow::Owned(format!("error: illegal character {}", c)),
+            NonTerminatingString => println!("nonterminating string, found end of file"),
+            StringEOL => println!("nonterminating string, found newline"),
+            Illegal(c) => println!("found illegal token {}", c),
             UnknownEscape(c) => {
                 let esc: String = c.escape_default().collect();
-                Cow::Owned(format!("error: unknown escape: '{}' in string literal", esc))
+                println!("unknown escape code {}", esc);
             }
-            _ => Cow::Borrowed(""),
+            IntLiteralTooLarge => println!("int literal too large"),
         }
     }
 }
