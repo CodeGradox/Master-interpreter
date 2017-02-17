@@ -1,11 +1,19 @@
 use std::fmt;
 use std::ops::{Add, Sub, Mul, Div};
-// use core::ops;
+use std::error::Error as StdError;
 
-/// The ammount of bits which we shift the
-const FRACTION_BITS: i32 = 1 << 16; // 65536
-const MAX_SIZE: i32 = 0x7FFF; // 0111 1111 1111 1111 or FRACTION_MASK - 1
+use real::RealError::*;
+
+/// This value is used when we want to convert a float to a real.
+/// The float is multiplied with this value.
+const FRACTION_VALUE: i32 = 1 << 16;
+/// Maximus size of the int part.
+/// Mask = 0111 1111 1111 1111
+const MAX_SIZE: i32 = 0x7FFF;
+const MIN_SIZE: i32 = 0xFFFF;
+/// The ammount of bits which the int part must be shifted.
 const SHIFT: i32 = 16;
+/// Maskign for the fraction part. It is used to remove the int part.
 const FRACTION_MASK: i32 = 0xFFFF;
 
 /// A real with the format 16.16, meaning 16 bits for the integer
@@ -19,19 +27,20 @@ pub struct Real {
 impl Real {
     /// Parses a string to a `Real`.
     /// # Legal input examples
-    /// `"3.14"`
-    ///
-    /// `"3."`
-    ///
-    /// `"3"`
-    pub fn parse(input: &str) -> Result<Self, String> {
-        let dot = input.find('.').unwrap_or_else(|| input.len());
-        let (msb, lsb) = input.split_at(dot);
-        let frac = (lsb.parse::<f32>().unwrap_or(0.0) * FRACTION_BITS as f32) as i32;
-        let int = msb.parse::<i32>().or(Err("could not parse int".to_string()))?;
-        if int > MAX_SIZE {
-            return Err("int too large".to_string()); // too large
+    /// `"3.14"`, `"3."`, `"3"`, `"."`, `".14"`
+    pub fn parse(input: &str) -> Result<Self, RealError> {
+        let len = input.len();
+        if len == 0 {
+            return Err(RealError::EmptyString);
         }
+        let dot = input.find('.').unwrap_or(len);
+        let (msb, lsb) = input.split_at(dot);
+        let int = msb.parse::<i32>().or(Err(RealError::EmptyString))?;
+        if int > MAX_SIZE {
+            return Err(RealError::IntLiteralTooLarge);
+        }
+        // figure out how to check that a value is negative
+        let frac = (lsb.parse::<f32>().unwrap_or(0.0) * FRACTION_VALUE as f32) as i32;
         let real = if int >= 0 {
             (int << SHIFT) + frac
         } else {
@@ -150,13 +159,13 @@ impl Div<f32> for Real {
 
 impl From<f32> for Real {
     fn from(f: f32) -> Self {
-        Real { value: (f * FRACTION_BITS as f32) as i32 }
+        Real { value: (f * FRACTION_VALUE as f32) as i32 }
     }
 }
 
 impl fmt::Display for Real {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.value as f32 / FRACTION_BITS as f32)
+        write!(f, "{}", self.value as f32 / FRACTION_VALUE as f32)
     }
 }
 
@@ -166,5 +175,30 @@ impl fmt::Debug for Real {
                "Real {{ value: msb:{} lsb:{} }}",
                self.value >> SHIFT,
                self.value & FRACTION_MASK)
+    }
+}
+
+#[derive(Debug)]
+pub enum RealError {
+    EmptyString,
+    IntLiteralTooLarge,
+}
+
+impl fmt::Display for RealError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(self.description())
+    }
+}
+
+impl StdError for RealError {
+    fn description(&self) -> &str {
+        match *self {
+            EmptyString => "could not parse empty string",
+            IntLiteralTooLarge => "int litteral too large",
+        }
+    }
+
+    fn cause(&self) -> Option<&StdError> {
+        None
     }
 }
