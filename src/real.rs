@@ -40,7 +40,7 @@ impl Real {
         }
         // figure out how to check that a value is negative
         let frac = (lsb.parse::<f32>().unwrap_or(0.0) * FRACTION_VALUE as f32) as i32;
-        let real = if int >= 0 {
+        let real = if (int >> SHIFT) >= 0 {
             (int << SHIFT) + frac
         } else {
             (int << SHIFT) - frac
