@@ -1,6 +1,7 @@
-use tokens;
-use tokens::{Token, LexerError, LexerResult};
-use real;
+use tokens::*;
+use real::Real;
+use error;
+use error::Error::*;
 
 use std::str::Chars;
 use std::iter::Peekable;
@@ -101,14 +102,14 @@ impl<'a> Lexer<'a> {
         let mut buf = String::new();
         buf.push(first);
         self.read_while(&mut buf, is_alphanumeric);
-        tokens::lookup_identity(buf)
+        lookup_identity(buf)
     }
 
     /// Reads a number from the input.
     /// Returns a `Result<Token, LexerError>` where `Token` is
     /// either an `Int` or a `Real`. The error happens when
     /// the parsing of the number fails.
-    fn read_number(&mut self, first: char) -> LexerResult {
+    fn read_number(&mut self, first: char) -> error::Result<Token> {
         let mut buf = String::new();
         buf.push(first);
         self.read_while(&mut buf, is_numeric);
@@ -124,22 +125,15 @@ impl<'a> Lexer<'a> {
             if count == 1 {
                 buf.push(self.read_char().unwrap());
                 self.read_while(&mut buf, is_numeric);
-                return real::Real::parse(&buf)
-                    .map(|r| Token::Real(r))
-                    .or(Err(LexerError::RealParseError));
+                return Real::parse(&buf).map(Token::Real);
             }
-            // else we just return the int
         }
-        // This solution will not handle -2147483648 because
-        // it does not know if the previous token was a `Minus`.
-        match buf.parse() {
-            Ok(val) => Ok(Token::Int(val)),
-            Err(_) => Err(LexerError::IntLiteralTooLarge),
-        }
+        // else we just return the int
+        buf.parse().map(Token::Int).map_err(error::Error::from)
     }
 
     /// Reads a string literal from the input.
-    fn read_string(&mut self) -> LexerResult {
+    fn read_string(&mut self) -> error::Result<Token> {
         let mut buf = String::new();
 
         // Loop until it finds a ".
@@ -150,20 +144,20 @@ impl<'a> Lexer<'a> {
                 match self.peek_char() {
                     Some(&p) => {
                         if !is_escape_char(p) {
-                            return Err(LexerError::UnknownEscape(p));
+                            return Err(UnknownEscape(p));
                         }
                     }
                     None => break,
                 }
             } else if c == '\n' {
-                return Err(LexerError::StringEOL);
+                return Err(StringEOL);
             } else if c == '"' {
                 self.skip();
                 return Ok(Token::Str(buf));
             }
             buf.push(self.read_char().unwrap());
         }
-        Err(LexerError::NonTerminatingString)
+        Err(InfiniteString)
     }
 
     /// Generates a `Token` from the characters read from the input.
@@ -175,7 +169,7 @@ impl<'a> Lexer<'a> {
     /// # Remarks
     /// Calling this method will advance the lexer.
     /// The lexer traverses the input only once.
-    pub fn next_token(&mut self) -> LexerResult {
+    pub fn next_token(&mut self) -> error::Result<Token> {
         self.skip_whitespace();
         self.start = self.column;
 
@@ -276,7 +270,7 @@ impl<'a> Lexer<'a> {
                     if is_letter(c) {
                         Ok(self.read_identifier(c))
                     } else {
-                        Err(LexerError::Illegal(c))
+                        Err(Illegal(c))
                     }
                 }
             }
@@ -302,7 +296,7 @@ impl<'a> Iterator for Lexer<'a> {
     /// and the `Err`is an error encountered while scanning the input.
     /// The first `u32` is the current line number.
     /// The second `u32` is the starting position of the `Token`.
-    type Item = (LexerResult, u32, u32);
+    type Item = (error::Result<Token>, u32, u32);
 
     /// Advances the iterator and returns the next value.
     /// It returns `None` when the `Lexer` returns a `Token::EndOfFile` token.

@@ -1,8 +1,8 @@
 use std::fmt;
 use std::ops::{Add, Sub, Mul, Div};
-use std::error::Error as StdError;
 
-use real::RealError::*;
+use error;
+use error::Error::*;
 
 /// This value is used when we want to convert a float to a real.
 /// The float is multiplied with this value.
@@ -28,16 +28,15 @@ impl Real {
     /// Parses a string to a `Real`.
     /// # Legal input examples
     /// `"3.14"`, `"3."`, `"3"`, `"."`, `".14"`
-    pub fn parse(input: &str) -> Result<Self, RealError> {
-        let len = input.len();
-        if len == 0 {
-            return Err(RealError::EmptyString);
+    pub fn parse(input: &str) -> error::Result<Real> {
+        let dot = input.find('.').unwrap_or_else(|| input.len());
+        if dot == 0 {
+            return Err(BadRealLiteral);
         }
-        let dot = input.find('.').unwrap_or(len);
         let (msb, lsb) = input.split_at(dot);
-        let int = msb.parse::<i32>().or(Err(RealError::EmptyString))?;
+        let int = msb.parse::<i32>()?;
         if int > MAX_SIZE {
-            return Err(RealError::IntLiteralTooLarge);
+            return Err(LargeInt);
         }
         // figure out how to check that a value is negative
         let frac = (lsb.parse::<f32>().unwrap_or(0.0) * FRACTION_VALUE as f32) as i32;
@@ -175,30 +174,5 @@ impl fmt::Debug for Real {
                "Real {{ value: msb:{} lsb:{} }}",
                self.value >> SHIFT,
                self.value & FRACTION_MASK)
-    }
-}
-
-#[derive(Debug)]
-pub enum RealError {
-    EmptyString,
-    IntLiteralTooLarge,
-}
-
-impl fmt::Display for RealError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(self.description())
-    }
-}
-
-impl StdError for RealError {
-    fn description(&self) -> &str {
-        match *self {
-            EmptyString => "could not parse empty string",
-            IntLiteralTooLarge => "int litteral too large",
-        }
-    }
-
-    fn cause(&self) -> Option<&StdError> {
-        None
     }
 }
