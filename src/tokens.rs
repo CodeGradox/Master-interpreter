@@ -1,11 +1,7 @@
 use std::fmt;
-use std::error::Error as StdError;
 
 use tokens::Token::*;
-use tokens::LexerError::*;
 use real::Real;
-
-pub type LexerResult = Result<Token, LexerError>;
 
 /// Represents a valid token returned by `Lexer::get_token`
 #[derive(Debug, Clone, PartialEq)]
@@ -135,47 +131,6 @@ impl fmt::Display for Token {
             Identity(ref i) => write!(f, "Identity: \"{}\"", i),
             _ => write!(f, "{:?}", self),
         }
-    }
-}
-
-/// Represents a error encountered during the lexical analysis.
-#[derive(Debug, Clone, PartialEq)]
-pub enum LexerError {
-    NonTerminatingString,
-    StringEOL,
-    Illegal(char),
-    UnknownEscape(char),
-    IntLiteralTooLarge,
-    RealParseError,
-}
-
-impl fmt::Display for LexerError {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            Illegal(c) => write!(f, "{} {}", self.description(), c),
-            UnknownEscape(c) => {
-                let s: String = c.escape_default().collect();
-                write!(f, "{} {}", self.description(), s)
-            }
-            _ => f.write_str(self.description()),
-        }
-    }
-}
-
-impl StdError for LexerError {
-    fn description(&self) -> &str {
-        match *self {
-            NonTerminatingString => "string never ends",
-            StringEOL => "found newline in string literal",
-            Illegal(_) => "found illegal character",
-            UnknownEscape(_) => "found unknow escape code",
-            IntLiteralTooLarge => "int literal too large",
-            RealParseError => "could not parse real literal",
-        }
-    }
-
-    fn cause(&self) -> Option<&StdError> {
-        None
     }
 }
 

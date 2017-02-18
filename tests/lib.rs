@@ -1,8 +1,9 @@
 extern crate interpreter;
 
 use interpreter::lexer;
-use interpreter::tokens::{Token, LexerError};
+use interpreter::tokens::Token;
 use interpreter::real::Real;
+use interpreter::error::Error;
 
 #[test]
 #[cfg_attr(rustfmt, rustfmt_skip)]
@@ -25,7 +26,7 @@ fn next_token_test() {
 #[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_neverending_string() {
     let mut lexer = lexer::Lexer::new("\"This string never ends");
-    let tokens = vec![Err(LexerError::NonTerminatingString), Ok(Token::EndOfFile)];
+    let tokens = vec![Err(Error::InfiniteString), Ok(Token::EndOfFile)];
 
     for t in &tokens {
         let token = lexer.next_token();
@@ -68,19 +69,19 @@ fn test_string_escape() {
 #[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_string_illegal_newline() {
     let mut lexer = lexer::Lexer::new("\"\n\"\\");
-    assert_eq!(Err(LexerError::StringEOL), lexer.next_token());
-    assert_eq!(Err(LexerError::NonTerminatingString), lexer.next_token());
+    assert_eq!(Err(Error::StringEOL), lexer.next_token());
+    assert_eq!(Err(Error::InfiniteString), lexer.next_token());
 }
 
 #[test]
 #[cfg_attr(rustfmt, rustfmt_skip)]
 fn test_error_tokens() {
     let mut lexer = lexer::Lexer::new("$%`^~");
-    let tokens = vec![Err(LexerError::Illegal('$')),
-                      Err(LexerError::Illegal('%')),
-                      Err(LexerError::Illegal('`')),
-                      Err(LexerError::Illegal('^')),
-                      Err(LexerError::Illegal('~')),
+    let tokens = vec![Err(Error::Illegal('$')),
+                      Err(Error::Illegal('%')),
+                      Err(Error::Illegal('`')),
+                      Err(Error::Illegal('^')),
+                      Err(Error::Illegal('~')),
                       Ok(Token::EndOfFile)];
     for t in &tokens {
         let token = lexer.next_token();
@@ -89,17 +90,17 @@ fn test_error_tokens() {
 }
 
 #[test]
-#[cfg_attr(rustfmt, rustfmt_skip)]
+#[cfg_attr(rustfmt, rustfmp)]
 fn test_error_messages() {
     let mut lexer = lexer::Lexer::new("\"\n\
     💡 \
     \"\\x \
     \"");
-    let tokens = vec![Err(LexerError::StringEOL),
-                      Err(LexerError::Illegal('💡')),
-                      Err(LexerError::UnknownEscape('x')),
+    let tokens = vec![Err(Error::StringEOL),
+                      Err(Error::Illegal('💡')),
+                      Err(Error::UnknownEscape('x')),
                       Ok(Token::Identity("x".to_owned())), // The lexer does not consume the illegal escape
-                      Err(LexerError::NonTerminatingString),
+                      Err(Error::InfiniteString),
                       Ok(Token::EndOfFile)];
     for t in &tokens {
         let token = lexer.next_token();

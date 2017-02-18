@@ -1,7 +1,6 @@
 extern crate interpreter;
 
 use interpreter::lexer;
-use interpreter::real;
 
 use std::io::Read;
 use std::fs::File;
