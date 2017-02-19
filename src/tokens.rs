@@ -3,6 +3,14 @@ use std::fmt;
 use tokens::Token::*;
 use real::Real;
 
+// TODO: Expand this
+// #[derive(Debuge, Clone)]
+// pub struct Token {
+//     pub kind: Token,
+//     pub line: u32,
+//     pub pos: u32,
+// }
+
 /// Represents a valid token returned by `Lexer::get_token`
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {

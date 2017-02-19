@@ -16,6 +16,8 @@ pub enum Error {
     Illegal(char),
     UnknownEscape(char),
     ParseIntError(num::ParseIntError),
+
+    TempParseErr,
 }
 
 impl fmt::Display for Error {
@@ -44,6 +46,7 @@ impl StdError for Error {
             Illegal(_) => "found illegal character",
             UnknownEscape(_) => "found unknow escape code",
             ParseIntError(ref e) => e.description(),
+            TempParseErr => "parser error",
         }
     }
 }
