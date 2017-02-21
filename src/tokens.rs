@@ -1,19 +1,18 @@
 use std::fmt;
 
-use tokens::Token::*;
+use tokens::TokenKind::*;
 use real::Real;
+use source_pos::SourcePos;
 
-// TODO: Expand this
-// #[derive(Debuge, Clone)]
-// pub struct Token {
-//     pub kind: Token,
-//     pub line: u32,
-//     pub pos: u32,
-// }
+#[derive(Debug, Clone, PartialEq)]
+pub struct Token {
+    pub kind: TokenKind,
+    pub pos: SourcePos,
+}
 
 /// Represents a valid token returned by `Lexer::get_token`
 #[derive(Debug, Clone, PartialEq)]
-pub enum Token {
+pub enum TokenKind {
     // Types
     Int(i32),
     Real(Real),
@@ -84,10 +83,17 @@ pub enum Token {
 }
 
 impl Token {
+    pub fn new(kind: TokenKind, pos: SourcePos) -> Self {
+        Token {
+            kind: kind,
+            pos: pos,
+        }
+    }
+
     /// Is this a keyword token?
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_keyword(&self) -> bool {
-        match *self {
+        match self.kind {
               At
             | Function
             | True
@@ -106,7 +112,7 @@ impl Token {
     /// Is this an assignment token?
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_assignment(&self) -> bool {
-        match *self {
+        match self.kind {
               Assignment
             | PlusAssignment
             | MinusAssignment
@@ -116,10 +122,10 @@ impl Token {
         }
     }
 
-    /// Is this an arithmetic  token?
+    /// Is this an arithmetic token?
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_arithmetic(&self) -> bool {
-        match *self {
+        match self.kind {
               Plus
             | Minus
             | Mul
@@ -127,17 +133,23 @@ impl Token {
             _ => false,
         }
     }
+
+    /// Is this an end of file (EOF) token?
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    pub fn is_eof(&self) -> bool {
+        self.kind == EndOfFile
+    }
 }
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // write!(f, "{:?}", self)
-        match *self {
+        write!(f, "{} ", self.pos)?;
+        match self.kind {
             Int(i) => write!(f, "Int: {}", i),
             Real(r) => write!(f, "Real: {}", r),
             Str(ref s) => write!(f, "Str: \"{}\"", s),
             Identity(ref i) => write!(f, "Identity: \"{}\"", i),
-            _ => write!(f, "{:?}", self),
+            _ => write!(f, "{:?}", self.kind),
         }
     }
 }
@@ -145,7 +157,7 @@ impl fmt::Display for Token {
 /// Performs a check on the input str `id` to see
 /// whenever it is a keyword token or a name token
 /// and then returns the coresponding `Token`.
-pub fn lookup_identity(id: String) -> Token {
+pub fn lookup_identity(id: String) -> TokenKind {
     match id.as_str() {
         "fn" => Function,
         "true" => True,

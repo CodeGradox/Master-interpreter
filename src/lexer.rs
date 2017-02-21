@@ -1,13 +1,16 @@
 use tokens::*;
 use real::Real;
 use error;
-use error::Error::*;
+use error::ParseError;
+use error::ParseErrorKind;
+use source_pos::SourcePos;
 
 use std::str::Chars;
 use std::iter::Peekable;
 
 /// The Lexical scanner.
 /// It performs a lexical scanning of a string.
+#[derive(Debug)]
 pub struct Lexer<'a> {
     input: Peekable<Chars<'a>>,
     line: u32,
@@ -98,7 +101,7 @@ impl<'a> Lexer<'a> {
     }
 
     /// Reads an identifier string from the input.
-    fn read_identifier(&mut self, first: char) -> Token {
+    fn read_identifier(&mut self, first: char) -> TokenKind {
         let mut buf = String::new();
         buf.push(first);
         self.read_while(&mut buf, is_alphanumeric);
@@ -109,7 +112,7 @@ impl<'a> Lexer<'a> {
     /// Returns a `Result<Token, LexerError>` where `Token` is
     /// either an `Int` or a `Real`. The error happens when
     /// the parsing of the number fails.
-    fn read_number(&mut self, first: char) -> error::Result<Token> {
+    fn read_number(&mut self, first: char) -> error::Result<TokenKind> {
         let mut buf = String::new();
         buf.push(first);
         self.read_while(&mut buf, is_numeric);
@@ -125,15 +128,21 @@ impl<'a> Lexer<'a> {
             if count == 1 {
                 buf.push(self.read_char().unwrap());
                 self.read_while(&mut buf, is_numeric);
-                return Real::parse(&buf).map(Token::Real);
+                match Real::parse(&buf) {
+                    Ok(r) => return Ok(TokenKind::Real(r)),
+                    Err(e) => return self.ret_err(e),
+                }
             }
         }
         // else we just return the int
-        buf.parse().map(Token::Int).map_err(error::Error::from)
+        match buf.parse() {
+            Ok(n) => Ok(TokenKind::Int(n)),
+            Err(e) => self.ret_err(e.into()),
+        }
     }
 
     /// Reads a string literal from the input.
-    fn read_string(&mut self) -> error::Result<Token> {
+    fn read_string(&mut self) -> error::Result<TokenKind> {
         let mut buf = String::new();
 
         // Loop until it finds a ".
@@ -144,20 +153,22 @@ impl<'a> Lexer<'a> {
                 match self.peek_char() {
                     Some(&p) => {
                         if !is_escape_char(p) {
-                            return Err(UnknownEscape(p));
+                            self.skip();
+                            return self.ret_err(ParseErrorKind::UnknownEscape(p));
                         }
                     }
                     None => break,
                 }
             } else if c == '\n' {
-                return Err(StringEOL);
+                self.skip();
+                return self.ret_err(ParseErrorKind::StringEOL);
             } else if c == '"' {
                 self.skip();
-                return Ok(Token::Str(buf));
+                return Ok(TokenKind::Str(buf));
             }
             buf.push(self.read_char().unwrap());
         }
-        Err(InfiniteString)
+        self.ret_err(ParseErrorKind::InfiniteString)
     }
 
     /// Generates a `Token` from the characters read from the input.
@@ -170,85 +181,90 @@ impl<'a> Lexer<'a> {
     /// Calling this method will advance the lexer.
     /// The lexer traverses the input only once.
     pub fn next_token(&mut self) -> error::Result<Token> {
+        self._next_token()
+            .map(|t| Token::new(t, SourcePos::new(self.line, self.start)))
+    }
+
+    fn _next_token(&mut self) -> error::Result<TokenKind> {
         self.skip_whitespace();
         self.start = self.column;
 
         if let Some(c) = self.read_char() {
             match c {
-                '@' => Ok(Token::At),
-                ',' => Ok(Token::Comma),
-                ';' => Ok(Token::Semicolon),
-                '{' => Ok(Token::LeftCurlyParam),
-                '}' => Ok(Token::RightCurlyParam),
-                '[' => Ok(Token::LeftSquareParam),
-                ']' => Ok(Token::RightSquareParam),
-                '(' => Ok(Token::LeftParam),
-                ')' => Ok(Token::RightParam),
-                '?' => Ok(Token::QuestionMark),
-                '&' => Ok(Token::And),
-                '|' => Ok(Token::Or),
+                '@' => Ok(TokenKind::At),
+                ',' => Ok(TokenKind::Comma),
+                ';' => Ok(TokenKind::Semicolon),
+                '{' => Ok(TokenKind::LeftCurlyParam),
+                '}' => Ok(TokenKind::RightCurlyParam),
+                '[' => Ok(TokenKind::LeftSquareParam),
+                ']' => Ok(TokenKind::RightSquareParam),
+                '(' => Ok(TokenKind::LeftParam),
+                ')' => Ok(TokenKind::RightParam),
+                '?' => Ok(TokenKind::QuestionMark),
+                '&' => Ok(TokenKind::And),
+                '|' => Ok(TokenKind::Or),
                 '!' => {
                     if self.peek_char_eq('=') {
                         self.skip();
-                        Ok(Token::NotEqual)
+                        Ok(TokenKind::NotEqual)
                     } else {
-                        Ok(Token::Not)
+                        Ok(TokenKind::Not)
                     }
                 }
                 '=' => {
                     if self.peek_char_eq('=') {
                         self.skip();
-                        Ok(Token::Equal)
+                        Ok(TokenKind::Equal)
                     } else {
-                        Ok(Token::Assignment)
+                        Ok(TokenKind::Assignment)
                     }
                 }
                 '+' => {
                     if self.peek_char_eq('=') {
                         self.skip();
-                        Ok(Token::PlusAssignment)
+                        Ok(TokenKind::PlusAssignment)
                     } else {
-                        Ok(Token::Plus)
+                        Ok(TokenKind::Plus)
                     }
                 }
                 '-' => {
                     if self.peek_char_eq('=') {
                         self.skip();
-                        Ok(Token::MinusAssignment)
+                        Ok(TokenKind::MinusAssignment)
                     } else {
-                        Ok(Token::Minus)
+                        Ok(TokenKind::Minus)
                     }
                 }
                 '*' => {
                     if self.peek_char_eq('=') {
                         self.skip();
-                        Ok(Token::MulAssignment)
+                        Ok(TokenKind::MulAssignment)
                     } else {
-                        Ok(Token::Mul)
+                        Ok(TokenKind::Mul)
                     }
                 }
                 '/' => {
                     if self.peek_char_eq('=') {
                         self.skip();
-                        Ok(Token::DivAssignment)
+                        Ok(TokenKind::DivAssignment)
                     } else {
-                        Ok(Token::Div)
+                        Ok(TokenKind::Div)
                     }
                 }
                 '>' => {
                     if self.peek_char_eq('=') {
                         self.skip();
-                        Ok(Token::GreaterEqual)
+                        Ok(TokenKind::GreaterEqual)
                     } else {
-                        Ok(Token::GreaterThan)
+                        Ok(TokenKind::GreaterThan)
                     }
                 }
                 '<' => {
                     if self.peek_char_eq('=') {
                         self.skip();
-                        Ok(Token::LessEqual)
+                        Ok(TokenKind::LessEqual)
                     } else {
-                        Ok(Token::LessThan)
+                        Ok(TokenKind::LessThan)
                     }
                 }
                 '.' => {
@@ -256,12 +272,12 @@ impl<'a> Lexer<'a> {
                         self.skip();
                         if self.peek_char_eq('.') {
                             self.skip();
-                            Ok(Token::InclusiveRange)
+                            Ok(TokenKind::InclusiveRange)
                         } else {
-                            Ok(Token::ExclusiveRange)
+                            Ok(TokenKind::ExclusiveRange)
                         }
                     } else {
-                        Ok(Token::Dot)
+                        Ok(TokenKind::Dot)
                     }
                 }
                 '0'...'9' => self.read_number(c),
@@ -270,13 +286,21 @@ impl<'a> Lexer<'a> {
                     if is_letter(c) {
                         Ok(self.read_identifier(c))
                     } else {
-                        Err(Illegal(c))
+
+                        self.ret_err(ParseErrorKind::Illegal(c))
                     }
                 }
             }
         } else {
-            Ok(Token::EndOfFile)
+            Ok(TokenKind::EndOfFile)
         }
+    }
+
+    fn ret_err(&self, kind: ParseErrorKind) -> error::Result<TokenKind> {
+        // Need to backup one char back for the output error as it has beem consumed
+        let pos = SourcePos::new(self.line, self.column - 1);
+        let err = ParseError::new(kind, pos);
+        Err(error::Error::from(err))
     }
 
     /// Returns the current line number.
@@ -296,15 +320,18 @@ impl<'a> Iterator for Lexer<'a> {
     /// and the `Err`is an error encountered while scanning the input.
     /// The first `u32` is the current line number.
     /// The second `u32` is the starting position of the `Token`.
-    type Item = (error::Result<Token>, u32, u32);
+    type Item = error::Result<Token>;
 
     /// Advances the iterator and returns the next value.
     /// It returns `None` when the `Lexer` returns a `Token::EndOfFile` token.
     fn next(&mut self) -> Option<Self::Item> {
-        match self.next_token() {
-            Ok(Token::EndOfFile) => None,
-            token => Some((token, self.line(), self.pos())),
+        let token = self.next_token();
+        if let Ok(ref t) = token {
+            if t.is_eof() {
+                return None;
+            }
         }
+        Some(token)
     }
 }
 

@@ -1,8 +1,7 @@
 use std::fmt;
 use std::ops::{Add, Sub, Mul, Div};
 
-use error;
-use error::Error::*;
+use error::ParseErrorKind;
 
 /// This value is used when we want to convert a float to a real.
 /// The float is multiplied with this value.
@@ -27,19 +26,21 @@ pub struct Real {
 impl Real {
     /// Parses a string to a `Real`.
     /// # Legal input examples
-    /// `"3.14"`, `"3."`, `"3"`, `"."`, `".14"`
-    pub fn parse(input: &str) -> error::Result<Real> {
+    /// `"3.14"`, `"3"`
+    pub fn parse(input: &str) -> Result<Real, ParseErrorKind> {
         let dot = input.find('.').unwrap_or_else(|| input.len());
-        if dot == 0 {
-            return Err(BadRealLiteral);
-        }
+        // if dot == 0 {
+        //     return Err(BadRealLiteral);
+        // }
         let (msb, lsb) = input.split_at(dot);
         let int = msb.parse::<i32>()?;
         if int > MAX_SIZE {
-            return Err(LargeInt);
+            // return Err(LargeInt);
+            return Err(ParseErrorKind::LargeInt);
         }
         // figure out how to check that a value is negative
-        let frac = (lsb.parse::<f32>().unwrap_or(0.0) * FRACTION_VALUE as f32) as i32;
+        // let frac = (lsb.parse::<f32>().unwrap_or(0.0) * FRACTION_VALUE as f32) as i32;
+        let frac = (lsb.parse::<f32>()? * FRACTION_VALUE as f32) as i32;
         let real = if (int >> SHIFT) >= 0 {
             (int << SHIFT) + frac
         } else {

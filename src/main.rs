@@ -18,10 +18,10 @@ fn main() {
     let buf = read_file().unwrap();
     let lexer = lexer::Lexer::new(&buf);
 
-    for (item, line, pos) in lexer {
-        print!("ln: {} col: {}\n\t", line, pos);
-        match item {
-            Ok(token) => println!("{}", token),
+    for token in lexer {
+        // println!("{:?}", token);
+        match token {
+            Ok(t) => println!("{}", t),
             Err(e) => println!("{}", e),
         }
     }
