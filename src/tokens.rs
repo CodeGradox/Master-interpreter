@@ -90,6 +90,14 @@ impl Token {
         }
     }
 
+    pub fn line(&self) -> u32 {
+        self.pos.line()
+    }
+
+    pub fn col(&self) -> u32 {
+        self.pos.col()
+    }
+
     /// Is this a keyword token?
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_keyword(&self) -> bool {
@@ -134,6 +142,29 @@ impl Token {
         }
     }
 
+    /// Is this a literal token?
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    pub fn is_literal(&self) -> bool {
+        match self.kind {
+              Int(_)
+            | Real(_)
+            | Str(_)
+            | Nil
+            | True
+            | False => true,
+            _ => false,
+        }
+    }
+
+    /// Is this a name token?
+    #[cfg_attr(rustfmt, rustfmt_skip)]
+    pub fn is_identity(&self) -> bool {
+        match self.kind {
+            Identity(_) => true,
+            _ => false,
+        }
+    }
+
     /// Is this an end of file (EOF) token?
     #[cfg_attr(rustfmt, rustfmt_skip)]
     pub fn is_eof(&self) -> bool {
@@ -143,7 +174,7 @@ impl Token {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} ", self.pos)?;
+        // write!(f, "{} ", self.pos)?;
         match self.kind {
             Int(i) => write!(f, "Int: {}", i),
             Real(r) => write!(f, "Real: {}", r),

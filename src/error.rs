@@ -50,6 +50,9 @@ pub enum ParseErrorKind {
 
     // Parser error
     TempParseErr,
+    ExpectedPrimitive,
+    ExpectedAtom(String),
+    EndOfFile(String),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -80,6 +83,10 @@ impl fmt::Display for ParseError {
             }
             ParseIntError(ref e) => fmt::Display::fmt(e, f),
             ParseFloatError(ref e) => fmt::Display::fmt(e, f),
+            EndOfFile(ref s) =>
+                write!(f, "{} found {}", s, self.description()),
+            ExpectedAtom(ref s) =>
+                write!(f, "{} found {}", self.description(), s),
             _ => f.write_str(self.description()),
         }
     }
@@ -89,14 +96,17 @@ impl StdError for ParseError {
     fn description(&self) -> &str {
         match self.kind {
             InfiniteString => "infinite string literal",
-            StringEOL => "found newline in string literal",
+            StringEOL => "newline in string literal",
             LargeInt => "int literal too big",
             BadRealLiteral => "could not parse real literal",
-            Illegal(_) => "found illegal character",
-            UnknownEscape(_) => "found unknow escape code",
+            Illegal(_) => "illegal character",
+            UnknownEscape(_) => "unknow escape code",
             ParseIntError(ref e) => e.description(),
             ParseFloatError(ref e) => e.description(),
             TempParseErr => "parser error",
+            ExpectedPrimitive => "expected primitive",
+            EndOfFile(_) => "end of file",
+            ExpectedAtom(_) => "expected atom",
         }
     }
 }

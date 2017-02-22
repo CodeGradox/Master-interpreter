@@ -9,6 +9,14 @@ impl SourcePos {
     pub fn new(line: u32, col: u32) -> Self {
         SourcePos(line, col)
     }
+
+    pub fn line(&self) -> u32 {
+        self.0
+    }
+
+    pub fn col(&self) -> u32 {
+        self.1
+    }
 }
 
 impl fmt::Display for SourcePos {

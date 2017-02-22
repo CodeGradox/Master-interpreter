@@ -29,17 +29,12 @@ impl Real {
     /// `"3.14"`, `"3"`
     pub fn parse(input: &str) -> Result<Real, ParseErrorKind> {
         let dot = input.find('.').unwrap_or_else(|| input.len());
-        // if dot == 0 {
-        //     return Err(BadRealLiteral);
-        // }
         let (msb, lsb) = input.split_at(dot);
         let int = msb.parse::<i32>()?;
         if int > MAX_SIZE {
-            // return Err(LargeInt);
             return Err(ParseErrorKind::LargeInt);
         }
         // figure out how to check that a value is negative
-        // let frac = (lsb.parse::<f32>().unwrap_or(0.0) * FRACTION_VALUE as f32) as i32;
         let frac = (lsb.parse::<f32>()? * FRACTION_VALUE as f32) as i32;
         let real = if (int >> SHIFT) >= 0 {
             (int << SHIFT) + frac
